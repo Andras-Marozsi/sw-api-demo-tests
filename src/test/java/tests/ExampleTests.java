@@ -6,17 +6,17 @@ import org.testng.annotations.Test;
 import helpers.Constants;
 import helpers.URLS;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static io.restassured.RestAssured.*;
 import static io.restassured.path.json.JsonPath.from;
 import static org.hamcrest.Matchers.*;
 
 public class ExampleTests {
+    private List collectedPlanetResults = new ArrayList();
 
     @Test(priority = 1)
-    public void planets_endpoint_smoke() {
+    public void verify_planets_endpoint_smoke() {
         given().when().get(URLS.SWAPI_PLANETS).then()
                 .statusCode(200)
                 .body(Constants.ATTR_COUNT, any(Integer.class),
@@ -27,7 +27,7 @@ public class ExampleTests {
 
     @Parameters({"planetID"})
     @Test(priority = 1)
-    public void planets_endpoint_with_id_smoke(int planetID) {
+    public void verify_planets_endpoint_with_id_smoke(int planetID) {
         given().when().get(URLS.getPlanetURL(planetID)).then()
                 .statusCode(200)
                 .body("name", any(String.class),
@@ -43,17 +43,16 @@ public class ExampleTests {
                         "created", any(String.class),
                         "edited", any(String.class),
                         "url", is(URLS.getPlanetURL(planetID) + "/"));
-
     }
 
     @Test(priority = 1)
-    public void planets_with_invalid_id_returns_404() {
+    public void verify_planets_with_invalid_id_returns_404() {
         given().when().get(URLS.getPlanetURL("invalid")).then()
                 .statusCode(404);
     }
 
     @Test(priority = 2)
-    public void planets_endpoint_ignores_starting_zeroes_in_id() {
+    public void verify_planets_endpoint_ignores_starting_zeroes_in_id() {
         String idWithZeros = "00001";
         int normalizedID = 1;
         given().when().get(URLS.getPlanetURL(idWithZeros)).then()
@@ -61,8 +60,8 @@ public class ExampleTests {
                 .body("url", is(URLS.getPlanetURL(normalizedID) + "/"));
     }
 
-    @Test(dependsOnMethods = {"planets_endpoint_smoke"}, priority = 2)
-    public void planets_endpoint_pagination() {
+    @Test(dependsOnMethods = {"verify_planets_endpoint_smoke"}, priority = 2)
+    public void verify_planets_endpoint_pagination() {
         int maxIterations = 10;
         int actualIteration = 0;
         int countFromResponse;
@@ -70,7 +69,6 @@ public class ExampleTests {
         String prev;
         String next;
         List resultList;
-        List collectedResults = new ArrayList();
 
         response = get(URLS.SWAPI_PLANETS).asString();
         countFromResponse = from(response).getInt(Constants.ATTR_COUNT);
@@ -78,7 +76,7 @@ public class ExampleTests {
         prev = from(response).getString(Constants.ATTR_PREV);
         next = from(response).getString(Constants.ATTR_NEXT);
 
-        collectedResults.addAll(resultList);
+        collectedPlanetResults.addAll(resultList);
 
         Assert.assertNull(prev, "Incorrect 'prev' value.");
 
@@ -87,11 +85,21 @@ public class ExampleTests {
             resultList = from(response).getList(Constants.ATTR_RESULTS);
             next = from(response).getString(Constants.ATTR_NEXT);
             prev = from(response).getString(Constants.ATTR_PREV);
-            collectedResults.addAll(resultList);
+            collectedPlanetResults.addAll(resultList);
             actualIteration++;
         }
         Assert.assertNotEquals(actualIteration, maxIterations, "Exceeded maximum retries");
-        Assert.assertEquals(countFromResponse, collectedResults.size(), "'count' is incorrect in API");
+        Assert.assertEquals(countFromResponse, collectedPlanetResults.size(), "'count' is incorrect in API");
         Assert.assertNotNull(prev, "Incorrect 'prev' value.");
+    }
+
+    @Test(dependsOnMethods = {"verify_planets_endpoint_pagination"}, priority = 2)
+    public void verify_planets_endpoint_unique_results() {
+        Set<String> uniqueUrls = new HashSet<String>();
+        for (Object planet : collectedPlanetResults) {
+            uniqueUrls.add(((HashMap) planet).get("url").toString());
+        }
+
+        Assert.assertEquals(uniqueUrls.size(), collectedPlanetResults.size(), "Not all result urls are unique");
     }
 }
