@@ -7,4 +7,8 @@ public class URLS {
     public static String getPlanetURL(int planetID) {
         return SWAPI_PLANETS + "/" + planetID;
     }
+
+    public static String getPlanetURL(String planetID) {
+        return SWAPI_PLANETS + "/" + planetID;
+    }
 }
