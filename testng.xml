@@ -2,6 +2,7 @@
 
 <suite name="ExampleSuite" verbose="1">
     <test name="SmokeTest">
+        <parameter name="planetID" value="1"/>
         <classes>
             <class name="tests.ExampleTests"/>
         </classes>
