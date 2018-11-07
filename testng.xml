@@ -1,10 +1,15 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="ExampleSuite" verbose="1">
-    <test name="SmokeTest">
-        <parameter name="planetID" value="1"/>
+    <test name="PlanetsHubSmokeTests">
         <classes>
-            <class name="tests.ExampleTests"/>
+            <class name="tests.PlanetsHubTests"/>
+        </classes>
+    </test>
+    <test name="PlanetsSmokeTests">
+        <parameter name="planetIDSmoke" value="1"/>
+        <classes>
+            <class name="tests.PlanetsTests"/>
         </classes>
     </test>
 </suite>
