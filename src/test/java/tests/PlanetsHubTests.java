@@ -2,6 +2,8 @@ package tests;
 
 import helpers.Constants;
 import helpers.URLS;
+import helpers.endpoints.PlanetsHub;
+import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -10,19 +12,16 @@ import java.util.*;
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.from;
-import static org.hamcrest.Matchers.*;
 
 public class PlanetsHubTests {
     private List collectedPlanetResults = new ArrayList();
+    private PlanetsHub planetsHub = new PlanetsHub();
 
     @Test(priority = 1)
     public void verify_planets_hub_endpoint_smoke() {
-        given().when().get(URLS.SWAPI_PLANETS).then()
-                .statusCode(200)
-                .body(Constants.ATTR_COUNT, any(Integer.class),
-                        Constants.ATTR_NEXT, is(URLS.SWAPI_PLANETS + "/?page=2"),
-                        Constants.ATTR_PREV, is(nullValue()),
-                        Constants.ATTR_RESULTS, any(ArrayList.class));
+        Response apiResp = given().when().get(planetsHub.url);
+        apiResp.then().statusCode(200);
+        planetsHub.verifyResponseSchema(apiResp);
     }
 
     @Test(dependsOnMethods = {"verify_planets_hub_endpoint_smoke"}, priority = 2)

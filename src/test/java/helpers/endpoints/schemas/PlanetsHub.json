@@ -1,0 +1,6 @@
+{
+  "count": "integer",
+  "next": "string",
+  "previous": "string",
+  "results": "array"
+}
