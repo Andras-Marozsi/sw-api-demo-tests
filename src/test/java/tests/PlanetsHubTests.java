@@ -3,23 +3,26 @@ package tests;
 import helpers.Constants;
 import helpers.URLS;
 import helpers.endpoints.PlanetsHub;
+import helpers.utils.Helper;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.*;
+import java.util.logging.Logger;
 
-import static io.restassured.RestAssured.get;
-import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.from;
 
+
 public class PlanetsHubTests {
+    private static final Logger LOGGER = Logger.getLogger(PlanetsHubTests.class.getName());
     private List collectedPlanetResults = new ArrayList();
     private PlanetsHub planetsHub = new PlanetsHub();
 
+
     @Test(priority = 1)
     public void verify_planets_hub_endpoint_smoke() {
-        Response apiResp = given().when().get(planetsHub.url);
+        Response apiResp = Helper.getResponse(planetsHub.url);
         apiResp.then().statusCode(200);
         planetsHub.verifyResponseSchema(apiResp);
     }
@@ -27,14 +30,14 @@ public class PlanetsHubTests {
     @Test(dependsOnMethods = {"verify_planets_hub_endpoint_smoke"}, priority = 2)
     public void verify_planets_hub_endpoint_pagination() {
         int maxIterations = 10;
-        int actualIteration = 0;
+        int actualIteration = 1;
         int countFromResponse;
         String response;
         String prev;
         String next;
         List resultList;
 
-        response = get(URLS.SWAPI_PLANETS).asString();
+        response = Helper.getResponse(URLS.SWAPI_PLANETS).asString();
         countFromResponse = from(response).getInt(Constants.ATTR_COUNT);
         resultList = from(response).getList(Constants.ATTR_RESULTS);
         prev = from(response).getString(Constants.ATTR_PREV);
@@ -45,13 +48,16 @@ public class PlanetsHubTests {
         Assert.assertNull(prev, "Incorrect 'prev' value.");
 
         while (next != null && actualIteration < maxIterations) {
-            response = get(next).asString();
+            LOGGER.info("Iteration: '" + actualIteration + "'");
+            response = Helper.getResponse(next).asString();
             resultList = from(response).getList(Constants.ATTR_RESULTS);
             next = from(response).getString(Constants.ATTR_NEXT);
             prev = from(response).getString(Constants.ATTR_PREV);
             collectedPlanetResults.addAll(resultList);
+            LOGGER.info("Collected results so far: '" + collectedPlanetResults.size() + "'");
             actualIteration++;
         }
+        LOGGER.info("Finished collection, final result count: '" + collectedPlanetResults.size() + "'");
         Assert.assertNotEquals(actualIteration, maxIterations, "Exceeded maximum retries");
         Assert.assertEquals(countFromResponse, collectedPlanetResults.size(), "'count' is incorrect in API");
         Assert.assertNotNull(prev, "Incorrect 'prev' value.");
