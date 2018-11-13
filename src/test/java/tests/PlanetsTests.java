@@ -23,14 +23,20 @@ public class PlanetsTests {
     }
 
     @Test(priority = 1)
-    public void verify_planets_with_invalid_id_returns_404() {
+    public void verify_planets_with_invalid_string_id_returns_404() {
         Helper.getResponse(URLS.getPlanetURL("invalid")).then()
                 .statusCode(404);
     }
 
     @Test(priority = 1)
-    public void verify_planets_with_negative_id_returns_404() {
+    public void verify_planets_with_invalid_negative_id_returns_404() {
         Helper.getResponse(URLS.getPlanetURL(-1)).then()
+                .statusCode(404);
+    }
+
+    @Test(priority = 1)
+    public void verify_planets_with_invalid_int_id_returns_404() {
+        Helper.getResponse(URLS.getPlanetURL(99)).then()
                 .statusCode(404);
     }
 
