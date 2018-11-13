@@ -72,4 +72,22 @@ public class PlanetsHubTests {
 
         Assert.assertEquals(uniqueUrls.size(), collectedPlanetResults.size(), "Not all result urls are unique");
     }
+
+    @Test(priority = 2)
+    public void verify_planets_hub_endpoint_pagination_invalid_page() {
+        Response apiResp = Helper.getResponse(planetsHub.url + "?page=99");
+        apiResp.then().statusCode(404);
+    }
+
+    @Test(priority = 2)
+    public void verify_planets_hub_endpoint_pagination_invalid_negative_page() {
+        Response apiResp = Helper.getResponse(planetsHub.url + "?page=-1");
+        apiResp.then().statusCode(404);
+    }
+
+    @Test(priority = 2)
+    public void verify_planets_hub_endpoint_pagination_invalid_string_page() {
+        Response apiResp = Helper.getResponse(planetsHub.url + "?page=abc");
+        apiResp.then().statusCode(404);
+    }
 }
