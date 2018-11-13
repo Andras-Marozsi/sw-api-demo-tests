@@ -64,7 +64,7 @@ public class PlanetsHubTests {
     }
 
     @Test(dependsOnMethods = {"verify_planets_hub_endpoint_pagination"}, priority = 2)
-    public void verify_planets_endpoint_unique_results() {
+    public void verify_planets_hub_endpoint_unique_results() {
         Set<String> uniqueUrls = new HashSet<String>();
         for (Object planet : collectedPlanetResults) {
             uniqueUrls.add(((HashMap) planet).get("url").toString());
